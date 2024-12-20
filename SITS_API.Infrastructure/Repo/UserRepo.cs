@@ -45,7 +45,7 @@ namespace SITS_API.Infrastructure.Repo
                 Title = registerUserDTO.Title,
                 FirstName = registerUserDTO.FirstName,
                 LastName = registerUserDTO.LastName,
-                DateOfBirth = registerUserDTO.DateOfBirth,
+                DateOfBirth = registerUserDTO.DateOfBirth.Date,
                 Gender = registerUserDTO.Gender,
                 Email = registerUserDTO.Email,
                 Password = BCrypt.Net.BCrypt.HashPassword(registerUserDTO.Password),
@@ -92,9 +92,60 @@ namespace SITS_API.Infrastructure.Repo
 
         public async Task<IEnumerable<ApplicationUser>> UpdateUser(ApplicationUser user)
         {
-            appDbContext.Entry(user).State = EntityState.Modified;
-            await appDbContext.SaveChangesAsync();
-            return await appDbContext.Users.ToListAsync();
+            //appDbContext.Entry(user).State = EntityState.Modified;
+            //await appDbContext.SaveChangesAsync();
+            //return await appDbContext.Users.ToListAsync();
+
+
+            using var transaction = appDbContext.Database.BeginTransaction();
+            try
+            {
+                var existingUser = await appDbContext.Users.FindAsync(user.Id);
+                existingUser.Title = user.Title;
+                existingUser.FirstName = user.FirstName;
+                existingUser.LastName = user.LastName;
+                existingUser.DateOfBirth = Convert.ToDateTime(user.DateOfBirth).Date;
+                existingUser.Gender = user.Gender;
+                existingUser.Email = user.Email;
+                existingUser.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
+                existingUser.Remark = user.Remark;
+                existingUser.DateModified = DateTime.Now;
+                appDbContext.Entry(existingUser).State = EntityState.Modified;
+                await appDbContext.SaveChangesAsync();
+
+                transaction.CreateSavepoint("BeforeMoreDetails");
+
+                var existingUderDetails = await appDbContext.UserDetails.FirstOrDefaultAsync(x => x.UserId == user.Id);
+                if (existingUderDetails != null)
+                {
+                    existingUderDetails.UserImage = "https://gratisography.com/wp-content/uploads/2024/10/gratisography-cool-cat-800x525.jpg";
+                    existingUderDetails.DateModified = DateTime.Now;
+                    appDbContext.Entry(existingUderDetails).State = EntityState.Modified;
+                }
+                else
+                {
+                    var userDetails = new UserDetail
+                    {
+                        UserId = user.Id,
+                        UserImage = "https://gratisography.com/wp-content/uploads/2024/10/gratisography-cool-cat-800x525.jpg",
+                        DateCreated = DateTime.Now
+                    };
+                    appDbContext.Entry(userDetails).State = EntityState.Added;
+                }
+                await appDbContext.SaveChangesAsync();
+
+                transaction.Commit();
+
+                return await appDbContext.Users.ToListAsync();
+            }
+            catch (Exception)
+            {
+                transaction.RollbackToSavepoint("BeforeMoreBlogs");
+                return null;
+            }
+            finally
+            {
+            }
         }
 
         #endregion"

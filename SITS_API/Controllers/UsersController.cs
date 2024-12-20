@@ -2,11 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SITS_API.Application.Contracts;
+using SITS_API.Application.DTOs;
 using SITS_API.Domain.Entities;
 
 namespace SITS_API.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
@@ -16,6 +17,13 @@ namespace SITS_API.Controllers
         public UsersController(IUser user)
         {
             this.user = user;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<RegistrationResponse>> RegisterUser(RegisterUserDTO registerDTO)
+        {
+            var result = await user.RegisterUserAsync(registerDTO);
+            return Ok(result);
         }
 
         [HttpGet]
@@ -40,7 +48,6 @@ namespace SITS_API.Controllers
             {
                 return BadRequest();
             }
-            userDetails.DateModified = DateTime.Now;
 
             var result = await user.UpdateUser(userDetails);
             return Ok(result);

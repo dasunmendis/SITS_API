@@ -1,0 +1,18 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/SITS_API/bin/Debug/net8.0
+/SITS_API/obj
+/SITS_API.Application/bin/Debug/net8.0
+/SITS_API.Application/obj/Debug/net8.0
+/SITS_API.Application/obj
+/SITS_API.Domain/bin/Debug/net8.0
+/SITS_API.Domain/bin/Debug/net8.0/SITS_API.Domain.deps.json
+/SITS_API.Domain/obj/Debug/net8.0
+/SITS_API.Domain/obj
+/SITS_API.Domain/obj/project.assets.json
+/SITS_API.Infrastructure/bin/Debug/net8.0
+/SITS_API.Infrastructure/bin/Debug/net8.0/SITS_API.Application.dll
+/SITS_API.Infrastructure/obj
